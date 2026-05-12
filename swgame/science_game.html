@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>선우 과학 연습 게임</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#f3f0fb;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:2rem 1rem;}
+  #app{background:#fff;border-radius:20px;padding:2rem 1.5rem;width:100%;max-width:440px;box-shadow:0 4px 32px rgba(0,0,0,0.08);min-height:540px;}
+  .screen{display:none;} .screen.active{display:block;}
+  .back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#888;background:none;border:none;cursor:pointer;margin-bottom:1.2rem;padding:0;}
+  .back-btn:hover{color:#1a1a1a;}
+  .title-area{text-align:center;margin-bottom:1.5rem;}
+  .title-area h1{font-size:22px;font-weight:700;color:#1a1a1a;}
+  .title-area p{font-size:14px;color:#888;margin-top:5px;}
+  .section-label{font-size:13px;color:#888;margin-bottom:8px;font-weight:500;}
+  .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.5rem;}
+  .mode-btn{background:#f8f7f4;border:2px solid #e8e6e0;border-radius:14px;padding:1.1rem 0.5rem;cursor:pointer;text-align:center;transition:all 0.15s;}
+  .mode-btn:hover,.mode-btn.selected{border-color:#7F77DD;background:#EEEDFE;}
+  .mode-btn .m-sym{font-size:26px;display:block;margin-bottom:4px;}
+  .mode-btn .m-lbl{font-size:12px;color:#888;font-weight:500;}
+  .mode-btn.selected .m-lbl{color:#3C3489;font-weight:700;}
+  .row-btns{display:flex;gap:8px;margin-bottom:1.5rem;}
+  .row-btn{flex:1;padding:0.6rem 0;border:1.5px solid #e8e6e0;border-radius:10px;background:#f8f7f4;cursor:pointer;font-size:13px;color:#888;font-weight:500;transition:all 0.15s;}
+  .row-btn:hover,.row-btn.selected{background:#EEEDFE;border-color:#7F77DD;color:#3C3489;}
+  .start-btn{width:100%;padding:0.9rem;background:#7F77DD;color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;}
+  .start-btn:hover{opacity:0.88;}
+  .hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;}
+  .hud-item{text-align:center;}
+  .hud-label{font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px;}
+  .hud-val{font-size:20px;font-weight:700;color:#1a1a1a;}
+  .timer-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center;}
+  .timer-num{position:absolute;font-size:16px;font-weight:700;color:#1a1a1a;}
+  .progress-wrap{background:#f0eeea;border-radius:4px;height:6px;margin-bottom:1.25rem;overflow:hidden;}
+  .progress-fill{height:6px;background:#7F77DD;border-radius:4px;transition:width 0.3s;}
+  .q-card{background:#f8f7f4;border:1.5px solid #e8e6e0;border-radius:16px;padding:1.75rem 1.25rem;text-align:center;margin-bottom:1rem;transition:background 0.2s,border-color 0.2s;}
+  .q-card.flash-ok{background:#E1F5EE;border-color:#1D9E75;}
+  .q-card.flash-err{background:#FCEBEB;border-color:#E24B4A;}
+  .cat-tag{display:inline-block;padding:2px 12px;border-radius:99px;font-size:11px;font-weight:600;background:#EEEDFE;color:#3C3489;margin-bottom:0.75rem;}
+  .q-text{font-size:17px;font-weight:600;color:#1a1a1a;line-height:1.5;}
+  .choices-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem;}
+  .choice-btn{padding:0.8rem 1rem;font-size:15px;font-weight:500;background:#fff;border:2px solid #e8e6e0;border-radius:12px;cursor:pointer;color:#1a1a1a;transition:all 0.12s;text-align:left;}
+  .choice-btn:hover:not(:disabled){border-color:#7F77DD;background:#EEEDFE;color:#3C3489;}
+  .choice-btn.correct{border-color:#1D9E75;background:#E1F5EE;color:#085041;}
+  .choice-btn.wrong{border-color:#E24B4A;background:#FCEBEB;color:#791F1F;}
+  .choice-btn:disabled{cursor:default;}
+  .feedback{height:26px;text-align:center;font-size:14px;font-weight:600;margin-bottom:0.5rem;}
+  .feedback.ok{color:#0F6E56;} .feedback.err{color:#A32D2D;}
+  .streak-area{text-align:center;font-size:13px;color:#aaa;}
+  .streak-badge{display:inline-block;padding:2px 12px;border-radius:99px;font-size:12px;font-weight:700;background:#FAEEDA;color:#633806;}
+  .result-card{background:#f8f7f4;border:1.5px solid #e8e6e0;border-radius:16px;padding:1.5rem;margin-bottom:1rem;text-align:center;}
+  .res-label{font-size:13px;color:#aaa;margin-bottom:4px;}
+  .res-score{font-size:52px;font-weight:800;color:#7F77DD;line-height:1;}
+  .res-comment{font-size:15px;color:#444;margin-top:8px;}
+  .stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1rem;}
+  .stat-box{background:#f8f7f4;border:1px solid #e8e6e0;border-radius:12px;padding:0.75rem;text-align:center;}
+  .stat-val{font-size:22px;font-weight:700;color:#1a1a1a;}
+  .stat-lbl{font-size:11px;color:#aaa;margin-top:2px;}
+  .replay-btn{width:100%;padding:0.85rem;background:#7F77DD;color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:8px;}
+  .replay-btn:hover{opacity:0.88;}
+  .home-btn{width:100%;padding:0.75rem;background:transparent;color:#888;border:1.5px solid #e8e6e0;border-radius:14px;font-size:14px;cursor:pointer;font-weight:500;}
+  .home-btn:hover{background:#f8f7f4;color:#444;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="screen-start" class="screen active">
+    <button class="back-btn" onclick="location.href='index.html'">← 홈으로</button>
+    <div class="title-area">
+      <h1>🔬 선우 과학 연습 게임</h1>
+      <p>과학 상식을 테스트해 보세요!</p>
+    </div>
+    <p class="section-label">분야 선택</p>
+    <div class="mode-grid">
+      <button class="mode-btn selected" data-cat="all" onclick="selectCat(this)"><span class="m-sym">🌌</span><span class="m-lbl">전체</span></button>
+      <button class="mode-btn" data-cat="physics" onclick="selectCat(this)"><span class="m-sym">⚡</span><span class="m-lbl">물리</span></button>
+      <button class="mode-btn" data-cat="biology" onclick="selectCat(this)"><span class="m-sym">🧬</span><span class="m-lbl">생물</span></button>
+      <button class="mode-btn" data-cat="earth" onclick="selectCat(this)"><span class="m-sym">🌍</span><span class="m-lbl">지구과학</span></button>
+    </div>
+    <p class="section-label">난이도</p>
+    <div class="row-btns">
+      <button class="row-btn" data-diff="easy" onclick="selectDiff(this)">쉬움</button>
+      <button class="row-btn selected" data-diff="medium" onclick="selectDiff(this)">보통</button>
+      <button class="row-btn" data-diff="hard" onclick="selectDiff(this)">어려움</button>
+    </div>
+    <button class="start-btn" onclick="startGame()">▶ 게임 시작</button>
+  </div>
+
+  <div id="screen-game" class="screen">
+    <div class="hud">
+      <div class="hud-item"><div class="hud-label">점수</div><div class="hud-val" id="hud-score">0</div></div>
+      <div class="hud-item">
+        <div class="timer-wrap">
+          <svg width="58" height="58" viewBox="0 0 58 58">
+            <circle cx="29" cy="29" r="25" fill="none" stroke="#eee" stroke-width="5"/>
+            <circle id="timer-arc" cx="29" cy="29" r="25" fill="none" stroke="#7F77DD" stroke-width="5"
+              stroke-dasharray="157.1" stroke-dashoffset="0" stroke-linecap="round"
+              transform="rotate(-90 29 29)" style="transition:stroke-dashoffset 0.9s linear;"/>
+          </svg>
+          <span class="timer-num" id="hud-timer">20</span>
+        </div>
+      </div>
+      <div class="hud-item"><div class="hud-label">문제</div><div class="hud-val" id="hud-q">1/10</div></div>
+    </div>
+    <div class="progress-wrap"><div class="progress-fill" id="progress-bar" style="width:10%"></div></div>
+    <div class="q-card" id="q-card">
+      <div><span class="cat-tag" id="cat-tag">물리</span></div>
+      <div class="q-text" id="q-text"></div>
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <div class="choices-list" id="choices-list"></div>
+    <div class="streak-area">연속 정답: <span class="streak-badge" id="streak-badge">0</span></div>
+  </div>
+
+  <div id="screen-result" class="screen">
+    <div class="title-area"><h1>🏆 결과 확인</h1></div>
+    <div class="result-card">
+      <div class="res-label">최종 점수</div>
+      <div class="res-score" id="res-score">0</div>
+      <div class="res-comment" id="res-comment"></div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-val" id="res-correct">0</div><div class="stat-lbl">정답</div></div>
+      <div class="stat-box"><div class="stat-val" id="res-streak">0</div><div class="stat-lbl">최대 연속</div></div>
+      <div class="stat-box"><div class="stat-val" id="res-acc">0%</div><div class="stat-lbl">정확도</div></div>
+    </div>
+    <button class="replay-btn" onclick="replayGame()">↺ 다시 도전</button>
+    <button class="home-btn" onclick="location.href='index.html'">← 홈으로</button>
+  </div>
+</div>
+
+<script>
+const QS = {
+  physics:[
+    {q:'빛의 속도는 약 얼마인가요?',a:'초속 30만 km',choices:['초속 30만 km','초속 3만 km','초속 300만 km','초속 3천 km'],diff:'easy'},
+    {q:'소리가 전달되지 않는 곳은 어디인가요?',a:'진공',choices:['진공','물속','공기 중','땅속'],diff:'easy'},
+    {q:'전기 저항의 단위는 무엇인가요?',a:'옴(Ω)',choices:['옴(Ω)','볼트(V)','암페어(A)','와트(W)'],diff:'medium'},
+    {q:'지레의 원리를 이용하는 도구가 아닌 것은?',a:'망치(박는 용도)',choices:['망치(박는 용도)','가위','시소','병따개'],diff:'medium'},
+    {q:'물체의 운동 에너지는 속도가 2배가 되면 몇 배가 되나요?',a:'4배',choices:['4배','2배','8배','3배'],diff:'hard'},
+    {q:'볼록 렌즈로 물체를 보면 어떻게 보이나요?',a:'크게 보임',choices:['크게 보임','작게 보임','거꾸로 보임','동일하게 보임'],diff:'easy'},
+    {q:'전류가 흐를 때 발생하는 열을 이용한 기구는?',a:'전기다리미',choices:['전기다리미','전동기','발전기','변압기'],diff:'medium'},
+    {q:'마찰력에 대한 설명으로 옳은 것은?',a:'운동을 방해하는 힘',choices:['운동을 방해하는 힘','운동을 도와주는 힘','중력의 일종','자기력의 일종'],diff:'medium'},
+    {q:'물질의 상태가 고체 → 기체로 바로 변하는 현상은?',a:'승화',choices:['승화','증발','응결','융해'],diff:'hard'},
+    {q:'스펙트럼에서 파장이 가장 긴 빛의 색은?',a:'빨간색',choices:['빨간색','파란색','노란색','보라색'],diff:'hard'}
+  ],
+  biology:[
+    {q:'광합성이 일어나는 세포 소기관은?',a:'엽록체',choices:['엽록체','미토콘드리아','핵','리보솜'],diff:'easy'},
+    {q:'사람의 혈액형을 결정하는 것은 무엇인가요?',a:'적혈구 표면의 항원',choices:['적혈구 표면의 항원','백혈구의 수','혈장의 성분','혈소판의 크기'],diff:'medium'},
+    {q:'소화 기관이 아닌 것은?',a:'폐',choices:['폐','위','소장','대장'],diff:'easy'},
+    {q:'식물의 기공은 주로 어디에 있나요?',a:'잎 뒷면',choices:['잎 뒷면','잎 앞면','줄기','뿌리'],diff:'easy'},
+    {q:'DNA의 이중 나선 구조를 발견한 사람은?',a:'왓슨과 크릭',choices:['왓슨과 크릭','다윈과 멘델','파스퇴르와 코흐','뉴턴과 갈릴레오'],diff:'medium'},
+    {q:'인체에서 가장 큰 기관(장기)은?',a:'피부',choices:['피부','간','폐','심장'],diff:'hard'},
+    {q:'세포 분열 시 유전 정보를 전달하는 물질은?',a:'DNA',choices:['DNA','단백질','지방','탄수화물'],diff:'medium'},
+    {q:'심장의 역할은 무엇인가요?',a:'혈액을 온몸에 펌프질',choices:['혈액을 온몸에 펌프질','산소를 흡수','영양분을 흡수','노폐물을 걸러냄'],diff:'easy'},
+    {q:'신경계를 구성하는 기본 단위 세포는?',a:'뉴런',choices:['뉴런','혈구','근육세포','상피세포'],diff:'hard'},
+    {q:'식물이 빛을 이용해 포도당을 만드는 과정은?',a:'광합성',choices:['광합성','호흡','증산','발효'],diff:'easy'}
+  ],
+  earth:[
+    {q:'지구의 가장 바깥쪽 층은?',a:'지각',choices:['지각','맨틀','외핵','내핵'],diff:'easy'},
+    {q:'태양계에서 가장 큰 행성은?',a:'목성',choices:['목성','토성','천왕성','해왕성'],diff:'easy'},
+    {q:'지진의 진원지에서 가장 먼저 도달하는 지진파는?',a:'P파',choices:['P파','S파','표면파','L파'],diff:'hard'},
+    {q:'달의 바다는 실제로 무엇인가요?',a:'굳은 용암 지대',choices:['굳은 용암 지대','실제 바다','얼음 지대','모래 지대'],diff:'medium'},
+    {q:'오존층이 위치하는 대기권의 층은?',a:'성층권',choices:['성층권','대류권','중간권','열권'],diff:'medium'},
+    {q:'화성암이 만들어지는 과정은?',a:'마그마가 식어서 굳음',choices:['마그마가 식어서 굳음','퇴적물이 쌓임','높은 열과 압력','생물의 유해가 쌓임'],diff:'easy'},
+    {q:'지구에서 낮과 밤이 생기는 이유는?',a:'지구의 자전',choices:['지구의 자전','지구의 공전','달의 공전','태양의 자전'],diff:'easy'},
+    {q:'판 구조론에서 히말라야 산맥은 어떻게 형성되었나요?',a:'두 대륙판의 충돌',choices:['두 대륙판의 충돌','해양판의 침강','판의 분리','화산 활동'],diff:'hard'},
+    {q:'우리나라에서 계절풍이 겨울에 부는 방향은?',a:'북서쪽',choices:['북서쪽','남동쪽','북동쪽','남서쪽'],diff:'medium'},
+    {q:'별의 색깔은 무엇을 나타내나요?',a:'표면 온도',choices:['표면 온도','크기','나이','밝기'],diff:'hard'}
+  ]
+};
+const CAT_LABELS={all:'전체',physics:'물리',biology:'생물',earth:'지구과학'};
+let selectedCat='all',selectedDiff='medium';
+let questions=[],qIndex=0,score=0,streak=0,maxStreak=0,correctCount=0;
+let timerInterval=null,timeLeft=20,answering=false;
+const TOTAL=10,diffTime={easy:25,medium:20,hard:15};
+
+function getPool(){
+  let pool=[];
+  if(selectedCat==='all') Object.values(QS).forEach(arr=>pool.push(...arr));
+  else pool=QS[selectedCat]||[];
+  const filtered=pool.filter(q=>q.diff===selectedDiff);
+  return filtered.length>=4?filtered:pool;
+}
+function selectCat(btn){document.querySelectorAll('[data-cat]').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');selectedCat=btn.dataset.cat;}
+function selectDiff(btn){document.querySelectorAll('[data-diff]').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');selectedDiff=btn.dataset.diff;}
+function startGame(){
+  const pool=getPool();
+  const shuffled=[...pool].sort(()=>Math.random()-.5);
+  questions=shuffled.slice(0,Math.min(TOTAL,shuffled.length));
+  qIndex=0;score=0;streak=0;maxStreak=0;correctCount=0;
+  showScreen('screen-game');loadQ();
+}
+function loadQ(){
+  answering=false;clearInterval(timerInterval);
+  const q=questions[qIndex];
+  document.getElementById('q-text').textContent=q.q;
+  document.getElementById('cat-tag').textContent=CAT_LABELS[selectedCat]||'전체';
+  document.getElementById('hud-score').textContent=score;
+  document.getElementById('hud-q').textContent=`${qIndex+1}/${questions.length}`;
+  document.getElementById('streak-badge').textContent=streak;
+  document.getElementById('progress-bar').style.width=`${(qIndex/questions.length)*100}%`;
+  document.getElementById('feedback').textContent='';
+  document.getElementById('feedback').className='feedback';
+  document.getElementById('q-card').className='q-card';
+  const list=document.getElementById('choices-list');
+  const shuffledC=[...q.choices].sort(()=>Math.random()-.5);
+  list.innerHTML='';
+  shuffledC.forEach(c=>{const btn=document.createElement('button');btn.className='choice-btn';btn.textContent=c;btn.onclick=()=>checkAns(c,q.a,btn);list.appendChild(btn);});
+  startTimer();
+}
+function startTimer(){
+  timeLeft=diffTime[selectedDiff];const total=timeLeft,circ=157.1;
+  const arc=document.getElementById('timer-arc');
+  document.getElementById('hud-timer').textContent=timeLeft;
+  arc.style.stroke='#7F77DD';arc.style.strokeDashoffset=0;
+  timerInterval=setInterval(()=>{
+    timeLeft--;document.getElementById('hud-timer').textContent=timeLeft;
+    arc.style.strokeDashoffset=((total-timeLeft)/total)*circ;
+    if(timeLeft<=5)arc.style.stroke='#E24B4A';else if(timeLeft<=8)arc.style.stroke='#BA7517';
+    if(timeLeft<=0){clearInterval(timerInterval);if(!answering)timeOut();}
+  },1000);
+}
+function checkAns(chosen,ans,btn){
+  if(answering)return;answering=true;clearInterval(timerInterval);
+  document.querySelectorAll('.choice-btn').forEach(b=>{b.disabled=true;if(b.textContent===ans)b.classList.add('correct');else if(b===btn&&chosen!==ans)b.classList.add('wrong');});
+  handleResult(chosen===ans,ans);
+}
+function timeOut(){
+  answering=true;streak=0;
+  document.getElementById('feedback').textContent='⏰ 시간 초과!';
+  document.getElementById('feedback').className='feedback err';
+  document.getElementById('q-card').classList.add('flash-err');
+  setTimeout(nextQ,1400);
+}
+function handleResult(ok,ans){
+  const fb=document.getElementById('feedback');const card=document.getElementById('q-card');
+  if(ok){streak++;correctCount++;maxStreak=Math.max(maxStreak,streak);const bonus=streak>=3?streak*5:0;const pts=10+bonus;score+=pts;fb.textContent=bonus>0?`✓ 정답! +${pts}점 (연속 보너스 +${bonus})`:'✓ 정답! +10점';fb.className='feedback ok';card.classList.add('flash-ok');}
+  else{streak=0;fb.textContent=`✗ 오답! 정답은 "${ans}"`;fb.className='feedback err';card.classList.add('flash-err');}
+  document.getElementById('streak-badge').textContent=streak;setTimeout(nextQ,1400);
+}
+function nextQ(){qIndex++;if(qIndex>=questions.length)endGame();else loadQ();}
+function endGame(){
+  const total=questions.length;
+  const acc=Math.round((correctCount/total)*100);
+  document.getElementById('res-score').textContent=score;
+  document.getElementById('res-correct').textContent=`${correctCount}/${total}`;
+  document.getElementById('res-streak').textContent=maxStreak;
+  document.getElementById('res-acc').textContent=`${acc}%`;
+  const cmts=['😊 괜찮아요! 과학도 재미있어요!','💪 좋아요! 점점 늘고 있어요!','👍 대단해요! 과학 실력이 좋네요!','🎉 완벽! 미래의 과학자!'];
+  document.getElementById('res-comment').textContent=cmts[acc>=90?3:acc>=70?2:acc>=50?1:0];
+  showScreen('screen-result');
+}
+function replayGame(){startGame();}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+</script>
+</body>
+</html>

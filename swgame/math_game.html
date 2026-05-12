@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>선우 수학 연습 게임</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+    background: #f4f2ef;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+  #app {
+    background: #fff;
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.08);
+    min-height: 540px;
+  }
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  .title-area { text-align: center; margin-bottom: 1.5rem; }
+  .title-area h1 { font-size: 22px; font-weight: 700; color: #1a1a1a; }
+  .title-area p { font-size: 14px; color: #888; margin-top: 5px; }
+
+  .section-label { font-size: 13px; color: #888; margin-bottom: 8px; font-weight: 500; }
+
+  .op-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; }
+  .op-btn {
+    background: #f8f7f4;
+    border: 2px solid #e8e6e0;
+    border-radius: 14px;
+    padding: 1.1rem 0.5rem;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+  }
+  .op-btn:hover { border-color: #378ADD; background: #E6F1FB; }
+  .op-btn.selected { border-color: #378ADD; background: #E6F1FB; }
+  .op-btn .op-sym { font-size: 28px; font-weight: 700; display: block; margin-bottom: 4px; color: #1a1a1a; }
+  .op-btn .op-lbl { font-size: 13px; color: #888; }
+  .op-btn.selected .op-lbl { color: #0C447C; font-weight: 600; }
+
+  .row-btns { display: flex; gap: 8px; margin-bottom: 1.5rem; }
+  .row-btn {
+    flex: 1; padding: 0.6rem 0;
+    border: 1.5px solid #e8e6e0;
+    border-radius: 10px;
+    background: #f8f7f4;
+    cursor: pointer; font-size: 13px;
+    color: #888; font-weight: 500;
+    transition: all 0.15s;
+  }
+  .row-btn:hover, .row-btn.selected { background: #EEEDFE; border-color: #7F77DD; color: #3C3489; }
+
+  .start-btn {
+    width: 100%; padding: 0.9rem;
+    background: #378ADD;
+    color: #fff; border: none;
+    border-radius: 14px;
+    font-size: 16px; font-weight: 700;
+    cursor: pointer; transition: opacity 0.15s;
+    letter-spacing: 0.02em;
+  }
+  .start-btn:hover { opacity: 0.88; }
+
+  /* HUD */
+  .hud { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+  .hud-item { text-align: center; }
+  .hud-label { font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+  .hud-val { font-size: 20px; font-weight: 700; color: #1a1a1a; }
+
+  .progress-wrap { background: #f0eeea; border-radius: 4px; height: 6px; margin-bottom: 1.25rem; overflow: hidden; }
+  .progress-fill { height: 6px; background: #378ADD; border-radius: 4px; transition: width 0.3s; }
+
+  .timer-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+  .timer-num { position: absolute; font-size: 16px; font-weight: 700; color: #1a1a1a; }
+
+  .q-card {
+    background: #f8f7f4;
+    border: 1.5px solid #e8e6e0;
+    border-radius: 16px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .q-card.flash-ok { background: #EAF3DE; border-color: #639922; }
+  .q-card.flash-err { background: #FCEBEB; border-color: #E24B4A; }
+
+  .op-tag {
+    display: inline-block; padding: 2px 12px;
+    border-radius: 99px; font-size: 11px; font-weight: 600;
+    background: #EEEDFE; color: #3C3489; margin-bottom: 0.75rem;
+  }
+  .q-expr { font-size: 34px; font-weight: 700; color: #1a1a1a; letter-spacing: 0.02em; }
+
+  .q-input {
+    display: block; margin: 1rem auto 0;
+    width: 110px; padding: 0.5rem;
+    font-size: 24px; font-weight: 700; text-align: center;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    background: #fff; color: #1a1a1a;
+    outline: none; transition: border-color 0.15s;
+  }
+  .q-input:focus { border-color: #378ADD; }
+
+  .choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1rem; }
+  .choice-btn {
+    padding: 0.9rem; font-size: 20px; font-weight: 700;
+    background: #fff;
+    border: 2px solid #e8e6e0;
+    border-radius: 12px;
+    cursor: pointer; color: #1a1a1a;
+    transition: all 0.12s;
+  }
+  .choice-btn:hover:not(:disabled) { border-color: #378ADD; background: #E6F1FB; color: #0C447C; }
+  .choice-btn.correct { border-color: #639922; background: #EAF3DE; color: #27500A; }
+  .choice-btn.wrong { border-color: #E24B4A; background: #FCEBEB; color: #791F1F; }
+  .choice-btn:disabled { cursor: default; }
+
+  .feedback { height: 26px; text-align: center; font-size: 14px; font-weight: 600; margin-bottom: 0.5rem; }
+  .feedback.ok { color: #3B6D11; }
+  .feedback.err { color: #A32D2D; }
+
+  .streak-area { text-align: center; font-size: 13px; color: #aaa; }
+  .streak-badge {
+    display: inline-block; padding: 2px 12px;
+    border-radius: 99px; font-size: 12px; font-weight: 700;
+    background: #FAEEDA; color: #633806;
+  }
+
+  /* Result */
+  .result-card {
+    background: #f8f7f4; border: 1.5px solid #e8e6e0;
+    border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; text-align: center;
+  }
+  .res-label { font-size: 13px; color: #aaa; margin-bottom: 4px; }
+  .res-score { font-size: 52px; font-weight: 800; color: #378ADD; line-height: 1; }
+  .res-comment { font-size: 15px; color: #444; margin-top: 8px; }
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 1rem; }
+  .stat-box {
+    background: #f8f7f4; border: 1px solid #e8e6e0;
+    border-radius: 12px; padding: 0.75rem; text-align: center;
+  }
+  .stat-val { font-size: 22px; font-weight: 700; color: #1a1a1a; }
+  .stat-lbl { font-size: 11px; color: #aaa; margin-top: 2px; }
+  .replay-btn {
+    width: 100%; padding: 0.85rem; background: #378ADD;
+    color: #fff; border: none; border-radius: 14px;
+    font-size: 16px; font-weight: 700; cursor: pointer; margin-bottom: 8px;
+  }
+  .replay-btn:hover { opacity: 0.88; }
+  .home-btn {
+    width: 100%; padding: 0.75rem;
+    background: transparent; color: #888;
+    border: 1.5px solid #e8e6e0;
+    border-radius: 14px; font-size: 14px;
+    cursor: pointer; font-weight: 500;
+  }
+  .home-btn:hover { background: #f8f7f4; color: #444; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- START -->
+  <div id="screen-start" class="screen active">
+    <div class="title-area">
+      <h1>🧮 선우 수학 연습 게임</h1>
+      <p>연산을 고르고 실력을 테스트해 보세요!</p>
+    </div>
+    <p class="section-label">연산 선택 (복수 가능)</p>
+    <div class="op-grid">
+      <button class="op-btn selected" data-op="add" onclick="toggleOp(this)">
+        <span class="op-sym">＋</span><span class="op-lbl">덧셈</span>
+      </button>
+      <button class="op-btn" data-op="sub" onclick="toggleOp(this)">
+        <span class="op-sym">－</span><span class="op-lbl">뺄셈</span>
+      </button>
+      <button class="op-btn" data-op="mul" onclick="toggleOp(this)">
+        <span class="op-sym">×</span><span class="op-lbl">곱셈</span>
+      </button>
+      <button class="op-btn" data-op="div" onclick="toggleOp(this)">
+        <span class="op-sym">÷</span><span class="op-lbl">나눗셈</span>
+      </button>
+    </div>
+    <p class="section-label">난이도</p>
+    <div class="row-btns">
+      <button class="row-btn" data-diff="easy" onclick="selectDiff(this)">쉬움</button>
+      <button class="row-btn selected" data-diff="medium" onclick="selectDiff(this)">보통</button>
+      <button class="row-btn" data-diff="hard" onclick="selectDiff(this)">어려움</button>
+    </div>
+    <p class="section-label">문제 방식</p>
+    <div class="row-btns">
+      <button class="row-btn selected" data-mode="choice" onclick="selectMode(this)">4지선다</button>
+      <button class="row-btn" data-mode="input" onclick="selectMode(this)">직접 입력</button>
+    </div>
+    <button class="start-btn" onclick="startGame()">▶ 게임 시작</button>
+  </div>
+
+  <!-- GAME -->
+  <div id="screen-game" class="screen">
+    <div class="hud">
+      <div class="hud-item">
+        <div class="hud-label">점수</div>
+        <div class="hud-val" id="hud-score">0</div>
+      </div>
+      <div class="hud-item">
+        <div class="timer-wrap">
+          <svg width="58" height="58" viewBox="0 0 58 58">
+            <circle cx="29" cy="29" r="25" fill="none" stroke="#eee" stroke-width="5"/>
+            <circle id="timer-arc" cx="29" cy="29" r="25" fill="none" stroke="#378ADD" stroke-width="5"
+              stroke-dasharray="157.1" stroke-dashoffset="0" stroke-linecap="round"
+              transform="rotate(-90 29 29)" style="transition: stroke-dashoffset 0.9s linear;"/>
+          </svg>
+          <span class="timer-num" id="hud-timer">15</span>
+        </div>
+      </div>
+      <div class="hud-item">
+        <div class="hud-label">문제</div>
+        <div class="hud-val" id="hud-q">1/10</div>
+      </div>
+    </div>
+    <div class="progress-wrap"><div class="progress-fill" id="progress-bar" style="width:10%"></div></div>
+    <div class="q-card" id="q-card">
+      <div><span class="op-tag" id="op-tag">덧셈</span></div>
+      <div class="q-expr" id="q-expr"></div>
+      <input class="q-input" id="q-input" type="number" placeholder="?" style="display:none" />
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <div class="choices-grid" id="choices-grid"></div>
+    <div class="streak-area">연속 정답: <span class="streak-badge" id="streak-badge">0</span></div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="screen-result" class="screen">
+    <div class="title-area"><h1>🏆 결과 확인</h1></div>
+    <div class="result-card">
+      <div class="res-label">최종 점수</div>
+      <div class="res-score" id="res-score">0</div>
+      <div class="res-comment" id="res-comment"></div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-val" id="res-correct">0</div><div class="stat-lbl">정답</div></div>
+      <div class="stat-box"><div class="stat-val" id="res-streak">0</div><div class="stat-lbl">최대 연속</div></div>
+      <div class="stat-box"><div class="stat-val" id="res-acc">0%</div><div class="stat-lbl">정확도</div></div>
+    </div>
+    <button class="replay-btn" onclick="replayGame()">↺ 다시 도전</button>
+    <button class="home-btn" onclick="goHome()">연산 · 난이도 변경</button>
+  </div>
+
+</div>
+<script>
+let selectedOps=['add'],difficulty='medium',gameMode='choice';
+let questions=[],qIndex=0,score=0,streak=0,maxStreak=0,correctCount=0;
+let timerInterval=null,timeLeft=15,answering=false;
+const TOTAL=10;
+const opLabels={add:'덧셈',sub:'뺄셈',mul:'곱셈',div:'나눗셈'};
+const diffTime={easy:20,medium:15,hard:10};
+const diffCfg={
+  easy:  {add:[1,20], sub:[1,20], mul:[1,5],  div:[1,5]},
+  medium:{add:[10,99],sub:[10,99],mul:[2,12], div:[2,12]},
+  hard:  {add:[50,999],sub:[50,999],mul:[7,25],div:[3,20]}
+};
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function genQ(op){
+  const c=diffCfg[difficulty][op];
+  let a,b,ans,expr;
+  if(op==='add'){a=rand(c[0],c[1]);b=rand(c[0],c[1]);ans=a+b;expr=`${a} + ${b} = ?`;}
+  else if(op==='sub'){a=rand(c[0],c[1]);b=rand(c[0],a);ans=a-b;expr=`${a} − ${b} = ?`;}
+  else if(op==='mul'){a=rand(c[0],c[1]);b=rand(c[0],c[1]);ans=a*b;expr=`${a} × ${b} = ?`;}
+  else{b=rand(c[0],c[1]);ans=rand(c[0],c[1]);a=b*ans;expr=`${a} ÷ ${b} = ?`;}
+  return{op,expr,ans};
+}
+function makeChoices(ans){
+  const s=new Set([ans]);
+  while(s.size<4){let v=ans+rand(1,Math.max(5,Math.ceil(Math.abs(ans)*0.3)))*(Math.random()>.5?1:-1);if(v>=0)s.add(v);}
+  return[...s].sort(()=>Math.random()-.5);
+}
+function toggleOp(btn){
+  const op=btn.dataset.op;
+  if(btn.classList.contains('selected')){if(selectedOps.length===1)return;btn.classList.remove('selected');selectedOps=selectedOps.filter(o=>o!==op);}
+  else{btn.classList.add('selected');selectedOps.push(op);}
+}
+function selectDiff(btn){document.querySelectorAll('[data-diff]').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');difficulty=btn.dataset.diff;}
+function selectMode(btn){document.querySelectorAll('[data-mode]').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');gameMode=btn.dataset.mode;}
+function startGame(){
+  questions=Array.from({length:TOTAL},()=>genQ(selectedOps[rand(0,selectedOps.length-1)]));
+  qIndex=0;score=0;streak=0;maxStreak=0;correctCount=0;
+  showScreen('screen-game');loadQ();
+}
+function loadQ(){
+  answering=false;clearInterval(timerInterval);
+  const q=questions[qIndex];
+  document.getElementById('q-expr').textContent=q.expr;
+  document.getElementById('op-tag').textContent=opLabels[q.op];
+  document.getElementById('hud-score').textContent=score;
+  document.getElementById('hud-q').textContent=`${qIndex+1}/${TOTAL}`;
+  document.getElementById('streak-badge').textContent=streak;
+  document.getElementById('progress-bar').style.width=`${(qIndex/TOTAL)*100}%`;
+  document.getElementById('feedback').textContent='';
+  document.getElementById('feedback').className='feedback';
+  document.getElementById('q-card').className='q-card';
+  const inp=document.getElementById('q-input');
+  const grid=document.getElementById('choices-grid');
+  if(gameMode==='choice'){
+    inp.style.display='none';
+    const ch=makeChoices(q.ans);grid.innerHTML='';
+    ch.forEach(c=>{const btn=document.createElement('button');btn.className='choice-btn';btn.textContent=c;btn.onclick=()=>checkAns(c,q.ans,btn);grid.appendChild(btn);});
+    grid.style.display='grid';
+  } else {
+    grid.style.display='none';grid.innerHTML='';
+    inp.style.display='block';inp.value='';
+    inp.onkeydown=e=>{if(e.key==='Enter')checkInput(q.ans);};
+    setTimeout(()=>inp.focus(),50);
+  }
+  startTimer();
+}
+function startTimer(){
+  timeLeft=diffTime[difficulty];
+  const total=timeLeft,circ=157.1;
+  const arc=document.getElementById('timer-arc');
+  document.getElementById('hud-timer').textContent=timeLeft;
+  arc.style.stroke='#378ADD';arc.style.strokeDashoffset=0;
+  timerInterval=setInterval(()=>{
+    timeLeft--;
+    document.getElementById('hud-timer').textContent=timeLeft;
+    arc.style.strokeDashoffset=((total-timeLeft)/total)*circ;
+    if(timeLeft<=5)arc.style.stroke='#E24B4A';
+    else if(timeLeft<=8)arc.style.stroke='#BA7517';
+    if(timeLeft<=0){clearInterval(timerInterval);if(!answering)timeOut();}
+  },1000);
+}
+function checkAns(chosen,ans,btn){
+  if(answering)return;answering=true;clearInterval(timerInterval);
+  document.querySelectorAll('.choice-btn').forEach(b=>{
+    b.disabled=true;
+    if(parseInt(b.textContent)===ans)b.classList.add('correct');
+    else if(b===btn&&chosen!==ans)b.classList.add('wrong');
+  });
+  handleResult(chosen===ans);
+}
+function checkInput(ans){
+  if(answering)return;
+  const v=parseInt(document.getElementById('q-input').value);
+  if(isNaN(v))return;
+  answering=true;clearInterval(timerInterval);handleResult(v===ans);
+}
+function timeOut(){
+  answering=true;streak=0;
+  document.getElementById('feedback').textContent='⏰ 시간 초과!';
+  document.getElementById('feedback').className='feedback err';
+  document.getElementById('q-card').classList.add('flash-err');
+  setTimeout(nextQ,1300);
+}
+function handleResult(ok){
+  const fb=document.getElementById('feedback');
+  const card=document.getElementById('q-card');
+  if(ok){
+    streak++;correctCount++;maxStreak=Math.max(maxStreak,streak);
+    const bonus=streak>=3?streak*5:0;const pts=10+bonus;score+=pts;
+    fb.textContent=bonus>0?`✓ 정답! +${pts}점 (연속 보너스 +${bonus})`:'✓ 정답! +10점';
+    fb.className='feedback ok';card.classList.add('flash-ok');
+  } else {
+    streak=0;
+    fb.textContent=`✗ 오답! 정답은 ${questions[qIndex].ans}`;
+    fb.className='feedback err';card.classList.add('flash-err');
+  }
+  document.getElementById('streak-badge').textContent=streak;
+  setTimeout(nextQ,1300);
+}
+function nextQ(){qIndex++;if(qIndex>=TOTAL)endGame();else loadQ();}
+function endGame(){
+  const acc=Math.round((correctCount/TOTAL)*100);
+  document.getElementById('res-score').textContent=score;
+  document.getElementById('res-correct').textContent=`${correctCount}/${TOTAL}`;
+  document.getElementById('res-streak').textContent=maxStreak;
+  document.getElementById('res-acc').textContent=`${acc}%`;
+  const comments=['😊 괜찮아요! 다시 도전해 봐요!','💪 좋아요! 계속 도전해 보세요!','👍 잘 했어요! 조금만 더 연습하면 완벽!','🎉 완벽해요! 수학 천재인가요?'];
+  document.getElementById('res-comment').textContent=comments[acc>=90?3:acc>=70?2:acc>=50?1:0];
+  showScreen('screen-result');
+}
+function replayGame(){startGame();}
+function goHome(){showScreen('screen-start');}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+</script>
+</body>
+</html>

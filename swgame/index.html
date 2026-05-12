@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>선우의 학습 게임 센터</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;
+    background:#f4f2ef;
+    min-height:100vh;
+    display:flex;align-items:flex-start;justify-content:center;
+    padding:2.5rem 1rem;
+  }
+  #app{width:100%;max-width:460px;}
+
+  .hero{text-align:center;margin-bottom:2.5rem;}
+  .hero-emoji{font-size:52px;display:block;margin-bottom:0.75rem;}
+  .hero h1{font-size:26px;font-weight:800;color:#1a1a1a;line-height:1.2;}
+  .hero p{font-size:15px;color:#888;margin-top:8px;}
+
+  .games{display:flex;flex-direction:column;gap:14px;margin-bottom:2rem;}
+
+  .game-card{
+    background:#fff;
+    border-radius:20px;
+    padding:1.5rem 1.5rem;
+    display:flex;align-items:center;gap:1.25rem;
+    box-shadow:0 2px 16px rgba(0,0,0,0.06);
+    text-decoration:none;
+    color:#1a1a1a;
+    border:2px solid transparent;
+    transition:all 0.18s;
+    cursor:pointer;
+  }
+  .game-card:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,0.1);}
+  .game-card.math:hover{border-color:#378ADD;}
+  .game-card.english:hover{border-color:#1D9E75;}
+  .game-card.science:hover{border-color:#7F77DD;}
+
+  .card-icon{
+    width:64px;height:64px;border-radius:16px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:30px;flex-shrink:0;
+  }
+  .math .card-icon{background:#E6F1FB;}
+  .english .card-icon{background:#E1F5EE;}
+  .science .card-icon{background:#EEEDFE;}
+
+  .card-body{flex:1;}
+  .card-title{font-size:17px;font-weight:700;color:#1a1a1a;margin-bottom:4px;}
+  .card-desc{font-size:13px;color:#888;line-height:1.5;}
+
+  .card-tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+  .tag{display:inline-block;padding:2px 10px;border-radius:99px;font-size:11px;font-weight:600;}
+  .math .tag{background:#E6F1FB;color:#0C447C;}
+  .english .tag{background:#E1F5EE;color:#085041;}
+  .science .tag{background:#EEEDFE;color:#3C3489;}
+
+  .arrow{font-size:20px;color:#ccc;flex-shrink:0;}
+  .game-card:hover .arrow{color:#aaa;}
+
+  .footer{text-align:center;font-size:12px;color:#bbb;padding-top:1rem;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="hero">
+    <span class="hero-emoji">🎮</span>
+    <h1>선우의 학습 게임 센터</h1>
+    <p>공부도 하고 즐겁게 놀자!</p>
+  </div>
+
+  <div class="games">
+    <a class="game-card math" href="math_game.html">
+      <div class="card-icon">🧮</div>
+      <div class="card-body">
+        <div class="card-title">수학 연습 게임</div>
+        <div class="card-desc">덧셈, 뺄셈, 곱셈, 나눗셈을 빠르게 풀어보세요!</div>
+        <div class="card-tags">
+          <span class="tag">덧셈</span>
+          <span class="tag">곱셈</span>
+          <span class="tag">나눗셈</span>
+          <span class="tag">타이머</span>
+        </div>
+      </div>
+      <div class="arrow">›</div>
+    </a>
+
+    <a class="game-card english" href="english_game.html">
+      <div class="card-icon">📖</div>
+      <div class="card-body">
+        <div class="card-title">영어 연습 게임</div>
+        <div class="card-desc">영단어 뜻을 맞혀보세요. 영어→한국어, 한국어→영어 모두 가능!</div>
+        <div class="card-tags">
+          <span class="tag">일상</span>
+          <span class="tag">자연</span>
+          <span class="tag">학교</span>
+          <span class="tag">4지선다</span>
+        </div>
+      </div>
+      <div class="arrow">›</div>
+    </a>
+
+    <a class="game-card science" href="science_game.html">
+      <div class="card-icon">🔬</div>
+      <div class="card-body">
+        <div class="card-title">과학 연습 게임</div>
+        <div class="card-desc">물리, 생물, 지구과학 상식을 퀴즈로 확인해 보세요!</div>
+        <div class="card-tags">
+          <span class="tag">물리</span>
+          <span class="tag">생물</span>
+          <span class="tag">지구과학</span>
+          <span class="tag">퀴즈</span>
+        </div>
+      </div>
+      <div class="arrow">›</div>
+    </a>
+  </div>
+
+  <div class="footer">열심히 공부하는 선우 응원해! 💪</div>
+</div>
+</body>
+</html>
