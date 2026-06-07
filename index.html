@@ -59,6 +59,10 @@ body::before{content:"";position:fixed;inset:0;background:radial-gradient(ellips
 .speed-row{display:flex;gap:5px}
 .spd{flex:1;background:var(--bg2);border:1px solid var(--border);color:var(--text2);border-radius:8px;padding:6px 3px;font-size:12px;cursor:pointer;transition:all .2s;font-family:"Noto Sans KR",sans-serif;text-align:center;-webkit-tap-highlight-color:transparent}
 .spd.on{background:var(--gold);border-color:var(--gold);color:#0d0c14;font-weight:600}
+.spd-slider-wrap{display:flex;align-items:center;gap:8px;padding:2px 0}
+.spd-slider{-webkit-appearance:none;appearance:none;flex:1;height:4px;border-radius:2px;background:var(--border2);outline:none;cursor:pointer}
+.spd-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--gold);border:2px solid var(--gold2);cursor:pointer;box-shadow:0 0 6px rgba(201,169,110,.4)}
+.spd-label{font-size:13px;color:var(--gold);font-weight:600;min-width:38px;text-align:center;font-variant-numeric:tabular-nums}
 .lyrics-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
 .lyrics-header{padding:12px 16px 10px;border-bottom:1px solid var(--border)}
 .lh-title{font-size:11px;color:var(--muted);letter-spacing:.1em}
@@ -191,13 +195,11 @@ body::before{content:"";position:fixed;inset:0;background:radial-gradient(ellips
         <button class="ab-clear" onclick="clrAB()">✕</button>
       </div>
     </div>
-    <div class="speed-row">
-      <button class="spd" onclick="setSp(.5,this)">0.5×</button>
-      <button class="spd" onclick="setSp(.75,this)">0.75×</button>
-      <button class="spd on" onclick="setSp(1,this)">1×</button>
-      <button class="spd" onclick="setSp(1.25,this)">1.25×</button>
-      <button class="spd" onclick="setSp(1.5,this)">1.5×</button>
-      <button class="spd" onclick="setSp(2,this)">2×</button>
+    <div class="spd-slider-wrap">
+      <button onclick="setSp(Math.max(0.5,Math.round((audio.playbackRate-0.01)*100)/100))" style="background:var(--bg2);border:1px solid var(--border);color:var(--text2);border-radius:8px;padding:4px 10px;font-size:14px;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent;">−</button>
+      <input class="spd-slider" id="spdSlider" type="range" min="0.5" max="1.5" step="0.01" value="1" oninput="setSp(parseFloat(this.value))">
+      <button onclick="setSp(Math.min(1.5,Math.round((audio.playbackRate+0.01)*100)/100))" style="background:var(--bg2);border:1px solid var(--border);color:var(--text2);border-radius:8px;padding:4px 10px;font-size:14px;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent;">+</button>
+      <span class="spd-label" id="spdLabel" onclick="setSp(1)" title="탭하면 1×" style="cursor:pointer;min-width:42px;text-align:center;">1.00×</span>
     </div>
   </div>
   <div class="lyrics-card">
@@ -250,7 +252,7 @@ function curSecEnd(i){return i<TS.length-1?TS[i+1]:audio.duration||99999}
 
 function togPlay(){if(audio.paused){audio.play();iPlay.style.display="none";iPause.style.display="";playBtn.classList.add("playing")}else{audio.pause();iPlay.style.display="";iPause.style.display="none";playBtn.classList.remove("playing")}}
 function sk(s){audio.currentTime=Math.max(0,Math.min(audio.duration||0,audio.currentTime+s))}
-function setSp(v,el){audio.playbackRate=v;document.querySelectorAll(".spd").forEach(b=>b.classList.remove("on"));el.classList.add("on")}
+function setSp(v){audio.playbackRate=v;const lbl=document.getElementById('spdLabel');if(lbl)lbl.textContent=v.toFixed(2)+'×';const sl=document.getElementById('spdSlider');if(sl)sl.value=v;}
 function secNav(dir){let idx=activeIdx+dir;idx=Math.max(0,Math.min(TS.length-1,idx));audio.currentTime=TS[idx]}
 
 function togSecLoop(){secLoop=!secLoop;document.getElementById("secLoopBtn").classList.toggle("on",secLoop);if(secLoop){allLoop=false;abMode=false;document.getElementById("allLoopBtn").classList.remove("on");document.getElementById("abLoopBtn").classList.remove("on");document.getElementById("abPanel").style.display="none"}updateLyricTags()}
