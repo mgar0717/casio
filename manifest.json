@@ -1,0 +1,24 @@
+{
+  "name": "동암교회 제자훈련 암송",
+  "short_name": "암송플레이어",
+  "description": "동암교회 제자훈련 1권 1과 ~ 2권 14과 암송 플레이어",
+  "start_url": "/casio/",
+  "display": "standalone",
+  "background_color": "#0d0c14",
+  "theme_color": "#c9a96e",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
