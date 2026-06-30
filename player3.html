@@ -132,7 +132,7 @@ body::before{content:"";position:fixed;inset:0;background:radial-gradient(ellips
 
   const app = initializeApp(firebaseConfig);
   const db  = getDatabase(app);
-  const presenceRef = ref(db, 'presence/sem2');
+  const presenceRef = ref(db, 'presence_3');
 
   // 접속 시 내 키 등록, 종료 시 자동 삭제
   const myRef = push(presenceRef, true);
