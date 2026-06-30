@@ -134,11 +134,7 @@ body::before{content:"";position:fixed;inset:0;background:radial-gradient(ellips
   const db  = getDatabase(app);
   const presenceRef = ref(db, 'presence');
 
-  // 접속 시 내 키 등록, 종료 시 자동 삭제
-  const myRef = push(presenceRef, true);
-  onDisconnect(myRef).remove();
-
-  // 실시간 인원 표시
+  // 2학기 페이지는 접속자 등록 없이 읽기만 함 (1학기에서만 등록)
   onValue(presenceRef, (snap) => {
     const count = snap.exists() ? Object.keys(snap.val()).length : 0;
     const el = document.getElementById('onlineCount');
