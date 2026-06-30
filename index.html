@@ -118,7 +118,7 @@ body::before{content:"";position:fixed;inset:0;background:radial-gradient(ellips
 </style>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-  import { getDatabase, ref, push, onDisconnect, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+  import { getDatabase, ref, set, remove, onDisconnect, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBlYkvEdA1sSxThVpV0qQ3etOzv4vSlgTc",
@@ -134,8 +134,14 @@ body::before{content:"";position:fixed;inset:0;background:radial-gradient(ellips
   const db  = getDatabase(app);
   const presenceRef = ref(db, 'presence');
 
-  // 접속 시 내 키 등록, 종료 시 자동 삭제
-  const myRef = push(presenceRef, true);
+  // 탭마다 고정 ID 사용 (페이지 이동해도 같은 ID 재사용 → 중복 방지)
+  let myId = sessionStorage.getItem('amsung_uid');
+  if (!myId) {
+    myId = 'u_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    sessionStorage.setItem('amsung_uid', myId);
+  }
+  const myRef = ref(db, 'presence/' + myId);
+  set(myRef, true);
   onDisconnect(myRef).remove();
 
   // 실시간 인원 표시
