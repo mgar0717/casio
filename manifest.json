@@ -5,7 +5,7 @@
   "start_url": "/casio/",
   "display": "standalone",
   "background_color": "#0d0c14",
-  "theme_color": "#c9a96e",
+  "theme_color": "#0d0c14",
   "orientation": "portrait",
   "icons": [
     {
