@@ -40,7 +40,7 @@ Structure inside each file:
 
 ## App 2: Kids' learning games (`swgame/`)
 
-A small hub (`swgame/index.html`) linking to three independent quiz-style games, all following the same pattern:
+A small hub (`swgame/index.html`) linking to independent games (three quiz-style games plus a co-op platformer), all following the same pattern:
 
 - `swgame/math_game.html` — arithmetic drills (operator/difficulty selection → timed multiple-choice or input questions)
 - `swgame/english_game.html` — English vocabulary/word practice (category/direction/difficulty selection)
@@ -48,6 +48,6 @@ A small hub (`swgame/index.html`) linking to three independent quiz-style games,
 
 Each game is a self-contained single-page "screen" app with no routing library: sections are plain `<div class="screen">` elements toggled via `showScreen(name)`/`.active` class. Common per-game flow: `select*()` (mode/difficulty pickers) → `startGame()` → `loadQ()` (loads next question) → `startTimer()` (per-question countdown) → `checkAns()`/`checkInput()` → `handleResult()` → `nextQ()` or `endGame()` → `replayGame()`/`goHome()`. Question pools are generated or selected in-file (`genQ`/`makeQs`/`makeChoices`/`getPool`) — there's no external question bank or persistence (no `localStorage`); state resets on reload.
 
-- `swgame/duo_escape.html` — 2-player co-op platformer ("둘이서 탈출!") on one keyboard (1P: W/A/D, 2P: arrow keys). Unlike the quiz games it is a `<canvas>` game with a fixed-step loop (`step()`/`render()`), tile levels in `LEVELS` (30×17 grid of chars: `#` wall, `^` spike, `r/b` buttons, `R/B` doors, `X/Y` bridges, `J` spring, `F` checkpoint, `1/2` spawns, `G` goal), and a built-in map editor. It is the one page that uses `localStorage` (`duo_players`, `duo_maps`, `duo_stars`), wrapped in try/catch; maps can also be exported/imported as `DUO1:` RLE codes.
+- `swgame/duo_escape.html` — 2-player co-op platformer ("둘이서 탈출!") on one keyboard (1P: W/A/D, 2P: arrow keys). Unlike the quiz games it is a `<canvas>` game with a fixed-step loop (`step()`/`render()`), 12 tile levels in `LEVELS` (30×17 grid of chars: `#` wall, `^` spike, `r/b` buttons, `R/B` doors, `X/Y` bridges, `J` spring, `F` checkpoint, `1/2` spawns, `G` goal), and a built-in map editor. It is the one page that uses `localStorage` (`duo_players`, `duo_maps`, `duo_stars`), wrapped in try/catch; maps can also be exported/imported as `DUO1:` RLE codes.
 
 When adding a new game, follow this same self-contained single-file structure and the `screen`/`showScreen` pattern rather than introducing shared JS/CSS files or a build step, to stay consistent with the rest of the repo.
